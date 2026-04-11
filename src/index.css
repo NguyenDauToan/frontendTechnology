@@ -1,0 +1,216 @@
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer base {
+  :root {
+    --background: 40 20% 98%;
+    --foreground: 220 30% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 30% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 30% 15%;
+
+    --primary: 220 50% 20%;
+    --primary-foreground: 40 20% 98%;
+
+    --secondary: 40 15% 92%;
+    --secondary-foreground: 220 30% 15%;
+
+    --muted: 40 10% 95%;
+    --muted-foreground: 220 15% 45%;
+
+    --accent: 38 80% 50%;
+    --accent-foreground: 220 30% 10%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 20% 88%;
+    --input: 220 20% 88%;
+    --ring: 38 80% 50%;
+
+    --radius: 4px;
+
+    --sidebar-background: 220 50% 15%;
+    --sidebar-foreground: 40 20% 95%;
+    --sidebar-primary: 38 80% 50%;
+    --sidebar-primary-foreground: 220 30% 10%;
+    --sidebar-accent: 220 45% 22%;
+    --sidebar-accent-foreground: 40 20% 95%;
+    --sidebar-border: 220 40% 25%;
+    --sidebar-ring: 38 80% 50%;
+
+    /* Custom tokens */
+    --success: 145 60% 40%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 90% 50%;
+    --warning-foreground: 220 30% 10%;
+    --info: 200 80% 50%;
+    --info-foreground: 0 0% 100%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(220 50% 20%), hsl(220 50% 30%));
+    --gradient-accent: linear-gradient(135deg, hsl(38 80% 50%), hsl(38 90% 60%));
+    --gradient-sidebar: linear-gradient(180deg, hsl(220 50% 15%), hsl(220 55% 12%));
+
+    /* Shadows - sharp, no blur */
+    --shadow-sm: 2px 2px 0 hsl(220 30% 15% / 0.08);
+    --shadow-md: 4px 4px 0 hsl(220 30% 15% / 0.1);
+    --shadow-lg: 6px 6px 0 hsl(220 30% 15% / 0.12);
+  }
+
+  .dark {
+    --background: 220 50% 8%;
+    --foreground: 40 20% 95%;
+
+    --card: 220 45% 12%;
+    --card-foreground: 40 20% 95%;
+
+    --popover: 220 45% 12%;
+    --popover-foreground: 40 20% 95%;
+
+    --primary: 38 80% 50%;
+    --primary-foreground: 220 30% 10%;
+
+    --secondary: 220 40% 18%;
+    --secondary-foreground: 40 20% 95%;
+
+    --muted: 220 35% 15%;
+    --muted-foreground: 40 15% 60%;
+
+    --accent: 38 80% 50%;
+    --accent-foreground: 220 30% 10%;
+
+    --destructive: 0 65% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 35% 20%;
+    --input: 220 35% 20%;
+    --ring: 38 80% 50%;
+
+    --sidebar-background: 220 55% 8%;
+    --sidebar-foreground: 40 20% 95%;
+    --sidebar-primary: 38 80% 50%;
+    --sidebar-primary-foreground: 220 30% 10%;
+    --sidebar-accent: 220 45% 15%;
+    --sidebar-accent-foreground: 40 20% 95%;
+    --sidebar-border: 220 40% 15%;
+    --sidebar-ring: 38 80% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-family: 'Be Vietnam Pro', sans-serif;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer components {
+  .card-sharp {
+    @apply bg-card text-card-foreground border-2 border-border;
+    box-shadow: var(--shadow-md);
+  }
+
+  .card-sharp:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translate(-2px, -2px);
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-foreground font-semibold px-6 py-3 border-2 border-foreground;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.15s ease;
+  }
+
+  .btn-primary:hover {
+    box-shadow: var(--shadow-md);
+    transform: translate(-2px, -2px);
+  }
+
+  .btn-accent {
+    @apply bg-accent text-accent-foreground font-semibold px-6 py-3 border-2 border-foreground;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.15s ease;
+  }
+
+  .btn-accent:hover {
+    box-shadow: var(--shadow-md);
+    transform: translate(-2px, -2px);
+  }
+
+  .input-sharp {
+    @apply border-2 border-border bg-background px-4 py-3 focus:border-accent focus:outline-none;
+  }
+
+  .stat-card {
+    @apply bg-card border-2 border-border p-6;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .table-sharp {
+    @apply w-full border-2 border-border;
+  }
+
+  .table-sharp th {
+    @apply bg-primary text-primary-foreground font-semibold text-left px-4 py-3 border-b-2 border-border;
+  }
+
+  .table-sharp td {
+    @apply px-4 py-4 border-b border-border;
+  }
+
+  .table-sharp tr:hover {
+    @apply bg-muted;
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-3 px-4 py-3 text-sidebar-foreground transition-colors;
+  }
+
+  .sidebar-item:hover {
+    @apply bg-sidebar-accent text-sidebar-accent-foreground;
+  }
+
+  .sidebar-item.active {
+    @apply bg-sidebar-primary text-sidebar-primary-foreground font-semibold;
+  }
+
+  .badge-status {
+    @apply inline-flex items-center px-3 py-1 text-sm font-medium border-2;
+  }
+
+  .badge-success {
+    @apply bg-[hsl(var(--success))] text-[hsl(var(--success-foreground))] border-[hsl(var(--success))];
+  }
+
+  .badge-warning {
+    @apply bg-[hsl(var(--warning))] text-[hsl(var(--warning-foreground))] border-[hsl(var(--warning))];
+  }
+
+  .badge-destructive {
+    @apply bg-destructive text-destructive-foreground border-destructive;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
