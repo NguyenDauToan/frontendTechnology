@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { getAddressesAPI, createAddressAPI, deleteAddressAPI, updateAddressAPI } from "@/api/addressApi"; 
+import { getAddressesAPI, createAddressAPI, deleteAddressAPI, updateAddressAPI } from "@/api/addressApi";
 import Header from "@/components/layout/user/Header";
 import PromoBanner from "./PromoBanner";
 import { Button } from "@/components/ui/button";
-import { Plus, MapPin, Trash2, Home, Building, Loader2, Edit } from "lucide-react"; 
+import { Plus, MapPin, Trash2, Home, Building, Loader2, Edit } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -54,7 +54,7 @@ const AddressBookPage = () => {
 
     // Nếu trong thành phố đã chứa tên đường (Data cũ) -> Trả về thành phố
     if (c.toLowerCase().includes(s.toLowerCase())) {
-        return c;
+      return c;
     }
 
     // Nếu Data chuẩn (Tách biệt) -> Ghép lại
@@ -76,36 +76,33 @@ const AddressBookPage = () => {
 
   useEffect(() => {
     loadAddresses();
-    axios.get("https://open.oapi.vn/location/provinces?page=0&size=63")
-      .then(res => setProvinces(res.data.data || []))
+
+    axios.get("https://provinces.open-api.vn/api/v1/?depth=2")
+      .then(res => {
+        setProvinces(res.data || []);
+      })
       .catch(err => console.error(err));
   }, []);
 
   // --- LOGIC ĐỊA CHÍNH ---
-  const handleProvinceChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const id = e.target.value;
-    setProvinceId(id);
-    setDistrictId(""); setWardId(""); setDistricts([]); setWards([]);
-    if (id) {
-      setIsDistrictsLoading(true);
-      try {
-        const res = await axios.get(`https://open.oapi.vn/location/districts/${id}?page=0&size=300`);
-        setDistricts(res.data.data || []);
-      } finally { setIsDistrictsLoading(false); }
-    }
+  const handleProvinceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const code = e.target.value;
+    setProvinceId(code);
+    setDistrictId("");
+    setWardId("");
+    setWards([]);
+
+    const selectedProvince = provinces.find(p => p.code == code);
+    setDistricts(selectedProvince?.districts || []);
   };
 
-  const handleDistrictChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const id = e.target.value;
-    setDistrictId(id);
-    setWardId(""); setWards([]);
-    if (id) {
-        setIsWardsLoading(true);
-        try {
-            const res = await axios.get(`https://open.oapi.vn/location/wards/${id}?page=0&size=300`);
-            setWards(res.data.data || []);
-        } finally { setIsWardsLoading(false); }
-    }
+  const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const code = e.target.value;
+    setDistrictId(code);
+    setWardId("");
+
+    const selectedDistrict = districts.find(d => d.code == code);
+    setWards(selectedDistrict?.wards || []);
   };
 
   // --- XỬ LÝ SỰ KIỆN ---
@@ -119,12 +116,12 @@ const AddressBookPage = () => {
   const handleEdit = (addr: any) => {
     setEditingId(addr._id);
     setFormData({
-        name: addr.name,
-        recipientName: addr.recipientName,
-        phone: addr.phone,
-        street: addr.street,
-        city: addr.city,
-        isDefault: addr.isDefault
+      name: addr.name,
+      recipientName: addr.recipientName,
+      phone: addr.phone,
+      street: addr.street,
+      city: addr.city,
+      isDefault: addr.isDefault
     });
     setProvinceId(""); setDistrictId(""); setWardId("");
     setIsModalOpen(true);
@@ -133,22 +130,22 @@ const AddressBookPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    let fullCity = formData.city; 
-    
+    let fullCity = formData.city;
+
     // Nếu có chọn địa điểm từ dropdown -> Cập nhật city mới (Không kèm street)
     if (provinceId && districtId && wardId) {
-        const pName = provinces.find(p => p.id == provinceId)?.name || "";
-        const dName = districts.find(d => d.id == districtId)?.name || "";
-        const wName = wards.find(w => w.id == wardId)?.name || "";
-        // Backend đã sửa để tự ghép, ở đây ta chỉ gửi phần Địa chính
-        fullCity = `${wName}, ${dName}, ${pName}`;
+      const pName = provinces.find(p => p.code == provinceId)?.name || "";
+      const dName = districts.find(d => d.code == districtId)?.name || "";
+      const wName = wards.find(w => w.code == wardId)?.name || "";
+    
+      fullCity = `${wName}, ${dName}, ${pName}`;
     }
 
     // Gửi street riêng, city riêng để Backend xử lý
     const submitData = {
       ...formData,
-      street: formData.street, 
-      city: fullCity, 
+      street: formData.street,
+      city: fullCity,
     };
 
     try {
@@ -159,7 +156,7 @@ const AddressBookPage = () => {
         await createAddressAPI(submitData);
         toast.success("Thêm mới thành công");
       }
-      
+
       setIsModalOpen(false);
       loadAddresses();
     } catch (error: any) {
@@ -168,13 +165,13 @@ const AddressBookPage = () => {
   };
 
   const handleSetDefault = async (id: string) => {
-      try {
-          await updateAddressAPI(id, { isDefault: true });
-          toast.success("Đã đặt làm địa chỉ mặc định");
-          loadAddresses();
-      } catch (error) {
-          toast.error("Lỗi cập nhật");
-      }
+    try {
+      await updateAddressAPI(id, { isDefault: true });
+      toast.success("Đã đặt làm địa chỉ mặc định");
+      loadAddresses();
+    } catch (error) {
+      toast.error("Lỗi cập nhật");
+    }
   }
 
   const handleDelete = async (id: string) => {
@@ -191,7 +188,7 @@ const AddressBookPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <PromoBanner/>
+      <PromoBanner />
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -237,26 +234,38 @@ const AddressBookPage = () => {
 
                 <div className="space-y-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
                   <p className="text-sm font-semibold text-gray-700">
-                      Khu vực vận chuyển 
-                      {editingId && <span className="text-xs font-normal text-red-500 ml-1">(Chọn lại nếu muốn thay đổi)</span>}
+                    Khu vực vận chuyển
+                    {editingId && <span className="text-xs font-normal text-red-500 ml-1">(Chọn lại nếu muốn thay đổi)</span>}
                   </p>
 
                   <div>
                     <select className="w-full border p-2 rounded text-sm bg-white focus:outline-primary" value={provinceId} onChange={handleProvinceChange} required={!editingId}>
                       <option value="">-- Chọn Tỉnh / Thành phố --</option>
-                      {provinces.map((p: any) => (<option key={p.id} value={p.id}>{p.name}</option>))}
+                      {provinces.map((p: any) => (
+                        <option key={p.code} value={p.code}>
+                          {p.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div>
                     <select className="w-full border p-2 rounded text-sm bg-white focus:outline-primary disabled:bg-gray-100" value={districtId} onChange={handleDistrictChange} disabled={!provinceId} required={!editingId}>
                       <option value="">{isDistrictsLoading ? "Đang tải..." : "-- Chọn Quận / Huyện --"}</option>
-                      {districts.map((d: any) => (<option key={d.id} value={d.id}>{d.name}</option>))}
+                      {districts.map((d: any) => (
+                        <option key={d.code} value={d.code}>
+                          {d.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div>
                     <select className="w-full border p-2 rounded text-sm bg-white focus:outline-primary disabled:bg-gray-100" value={wardId} onChange={(e) => setWardId(e.target.value)} disabled={!districtId} required={!editingId}>
                       <option value="">{isWardsLoading ? "Đang tải..." : "-- Chọn Phường / Xã --"}</option>
-                      {wards.map((w: any) => (<option key={w.id} value={w.id}>{w.name}</option>))}
+                      {wards.map((w: any) => (
+                        <option key={w.code} value={w.code}>
+                          {w.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -272,7 +281,7 @@ const AddressBookPage = () => {
                 </label>
 
                 <Button type="submit" className="w-full font-bold">
-                    {editingId ? "Cập nhật" : "Lưu địa chỉ"}
+                  {editingId ? "Cập nhật" : "Lưu địa chỉ"}
                 </Button>
               </form>
             </DialogContent>
@@ -285,45 +294,45 @@ const AddressBookPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Array.isArray(addresses) && addresses.map((addr) => (
               <div key={addr._id} className={`bg-white p-5 rounded-xl border shadow-sm relative group transition-colors ${addr.isDefault ? 'border-primary bg-blue-50/20' : 'border-gray-200 hover:border-primary/50'}`}>
-                
+
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-gray-900">{addr.recipientName}</span>
                     {addr.isDefault && <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Mặc định</span>}
                   </div>
-                  
+
                   <div className="flex items-center gap-1">
-                      <button onClick={() => handleEdit(addr)} className="text-gray-400 hover:text-blue-600 p-1 transition-colors" title="Sửa">
-                          <Edit className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => handleDelete(addr._id)} className="text-gray-400 hover:text-red-600 p-1 transition-colors" title="Xóa">
-                          <Trash2 className="w-4 h-4" />
-                      </button>
+                    <button onClick={() => handleEdit(addr)} className="text-gray-400 hover:text-blue-600 p-1 transition-colors" title="Sửa">
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => handleDelete(addr._id)} className="text-gray-400 hover:text-red-600 p-1 transition-colors" title="Xóa">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
 
                 <p className="text-sm text-gray-500 mb-1">{addr.phone}</p>
                 <div className="flex items-start gap-2 text-sm text-gray-600 mt-2">
                   <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
-                  
+
                   {/* 👇 ĐÃ SỬA: Dùng hàm formatDisplayAddress để hiển thị cả Street + City */}
                   <span>{formatDisplayAddress(addr.street, addr.city)}</span>
                 </div>
 
                 <div className="mt-3 pt-3 border-t flex justify-between items-center text-xs">
-                    <div className="flex items-center gap-2 text-gray-400">
-                        {addr.name === "Nhà riêng" ? <Home className="w-3 h-3" /> : <Building className="w-3 h-3" />}
-                        {addr.name}
-                    </div>
+                  <div className="flex items-center gap-2 text-gray-400">
+                    {addr.name === "Nhà riêng" ? <Home className="w-3 h-3" /> : <Building className="w-3 h-3" />}
+                    {addr.name}
+                  </div>
 
-                    {!addr.isDefault && (
-                        <button 
-                            onClick={() => handleSetDefault(addr._id)}
-                            className="text-primary hover:underline font-medium flex items-center gap-1"
-                        >
-                            Thiết lập mặc định
-                        </button>
-                    )}
+                  {!addr.isDefault && (
+                    <button
+                      onClick={() => handleSetDefault(addr._id)}
+                      className="text-primary hover:underline font-medium flex items-center gap-1"
+                    >
+                      Thiết lập mặc định
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
