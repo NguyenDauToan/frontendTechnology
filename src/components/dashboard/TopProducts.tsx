@@ -1,46 +1,50 @@
+import { cn } from "@/lib/utils";
+
 interface TopProduct {
+  _id: string;
   name: string;
   sold: number;
-  revenue: number;
+  price: number;
 }
 
-const topProducts: TopProduct[] = [
-  { name: "Áo thun nam cao cấp", sold: 156, revenue: 23400000 },
-  { name: "Quần jean nữ slim fit", sold: 134, revenue: 26800000 },
-  { name: "Giày sneaker unisex", sold: 98, revenue: 29400000 },
-  { name: "Túi xách da thật", sold: 87, revenue: 43500000 },
-  { name: "Đồng hồ thời trang", sold: 65, revenue: 32500000 },
-];
+interface Props {
+  products: TopProduct[];
+}
 
-const TopProducts = () => {
-  const maxSold = Math.max(...topProducts.map((p) => p.sold));
+const TopProducts = ({ products }: Props) => {
+  if (!products || products.length === 0)
+    return <div className="p-6">Không có dữ liệu</div>;
+
+  const maxSold = Math.max(...products.map(p => p.sold || 0), 1);
 
   return (
     <div className="card-sharp p-6">
       <h3 className="text-lg font-bold mb-6">Sản phẩm bán chạy</h3>
 
       <div className="space-y-4">
-        {topProducts.map((product, index) => (
-          <div 
-            key={product.name}
-            className="animate-fade-in"
-            style={{ animationDelay: `${index * 80}ms` }}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-medium text-sm">{product.name}</span>
-              <span className="text-sm text-muted-foreground">
+        {products.map((product, index) => (
+          <div key={product._id}>
+            
+            <div className="flex justify-between text-sm mb-1">
+              <span className="font-medium">{product.name}</span>
+              <span className="text-muted-foreground">
                 {product.sold} đã bán
               </span>
             </div>
+
             <div className="h-2 bg-muted border border-border">
               <div
                 className="h-full bg-accent transition-all duration-500"
-                style={{ width: `${(product.sold / maxSold) * 100}%` }}
+                style={{
+                  width: `${(product.sold / maxSold) * 100}%`
+                }}
               />
             </div>
+
             <p className="text-xs text-muted-foreground mt-1">
-              Doanh thu: {product.revenue.toLocaleString("vi-VN")}đ
+              Giá: {product.price?.toLocaleString("vi-VN")}đ
             </p>
+
           </div>
         ))}
       </div>

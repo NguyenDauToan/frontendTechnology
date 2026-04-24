@@ -118,7 +118,7 @@ const FeaturedProducts = () => {
                       price={displayPrice} 
                       originalPrice={displayOriginalPrice}
                       image={product.images && product.images.length > 0 ? product.images[0] : ""}
-                      rating={product.rating || 5} 
+                      rating={product.rating || 0} 
                       reviews={product.numReviews || 0}
                       sold={product.sold || 0}
                       badge={isFlashSale ? undefined : (product.stock < 10 ? "Sắp hết" : undefined)}
