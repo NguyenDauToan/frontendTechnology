@@ -441,7 +441,7 @@ const ProductDetailPage = () => {
                     {Object.entries(product.specs).map(([key, value]: any, index) => (
                       <div key={key} className={`flex px-5 py-3 border-b border-gray-100 last:border-0 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
                         <span className="w-2/5 text-gray-500 capitalize">{key.replace('_', ' ')}</span>
-                        <span className="w-3/5 text-gray-900 font-medium text-right">{value}</span>
+                        <span className="w-3/5 text-gray-900 font-medium text-right">  {typeof value === "object" ? value.v : value}</span>
                       </div>
                     ))}
                   </div>
