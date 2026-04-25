@@ -96,13 +96,24 @@ const AddressBookPage = () => {
     setDistricts(selectedProvince?.districts || []);
   };
 
-  const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleDistrictChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const code = e.target.value;
     setDistrictId(code);
     setWardId("");
-
-    const selectedDistrict = districts.find(d => d.code == code);
-    setWards(selectedDistrict?.wards || []);
+    setIsWardsLoading(true);
+  
+    try {
+      const res = await axios.get(
+        `https://provinces.open-api.vn/api/v1/d/${code}?depth=2`
+      );
+  
+      setWards(res.data.wards || []);
+    } catch (err) {
+      console.error(err);
+      setWards([]);
+    } finally {
+      setIsWardsLoading(false);
+    }
   };
 
   // --- XỬ LÝ SỰ KIỆN ---
