@@ -88,12 +88,13 @@ const ProductDetailPage = () => {
   const [images, setImages] = useState<File[]>([]);
   const [videos, setVideos] = useState<File[]>([]);
   const [hasReviewed, setHasReviewed] = useState(false);
+  const [reviewingItem, setReviewingItem] = useState<any>(null);
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "null");
     if (!user || !product?.reviews) return;
 
     const reviewed = product.reviews.some(
-      (r: any) => r.user === user._id // 👈 backend phải có field user
+      (r: any) => r.user.toString() === user._id // 👈 backend phải có field user
     );
 
     setHasReviewed(reviewed);
@@ -139,6 +140,8 @@ const ProductDetailPage = () => {
     };
     loadProduct();
   }, [id, navigate]);
+  // ProductDetailPage.tsx
+
   useEffect(() => {
     const checkCanReview = async () => {
       try {
@@ -146,23 +149,19 @@ const ProductDetailPage = () => {
         if (!user || !product?._id) return;
 
         const res = await axios.get(
-          "http://localhost:5000/api/orders/my-products",
+          `http://localhost:5000/api/orders/check-review/${product._id}`,
           {
-            headers: {
-              Authorization: `Bearer ${user.token}`
-            }
+            headers: { Authorization: `Bearer ${user.token}` }
           }
         );
 
-        // 👇 check user có mua sản phẩm này không
-        const owned = res.data.some(
-          (item: any) => item.product_id === product._id
-        );
-
-        setCanReview(owned);
+        // SỬA TẠI ĐÂY: Backend trả về { canReview: true/false } 
+        // chứ không phải mảng đơn hàng
+        setCanReview(res.data.canReview);
 
       } catch (err) {
-        console.error(err);
+        console.error("Lỗi check review:", err);
+        setCanReview(false);
       }
     };
 
@@ -170,6 +169,7 @@ const ProductDetailPage = () => {
       checkCanReview();
     }
   }, [product]);
+
   const formatPrice = (value: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
   };
@@ -191,6 +191,7 @@ const ProductDetailPage = () => {
           state: {
             buyNowItem: {
               product,
+              price: product.displayPrice,
               quantity
             }
           }
@@ -232,16 +233,16 @@ const ProductDetailPage = () => {
 
     try {
       setSubmitting(true);
-
       const formData = new FormData();
       formData.append("rating", rating.toString());
       formData.append("comment", comment);
 
-      images.forEach(img => formData.append("images", img));
-      videos.forEach(vid => formData.append("videos", vid));
+      // ĐẨY FILE VÀO FORM DATA
+      images.forEach(file => formData.append("images", file));
+      videos.forEach(file => formData.append("videos", file));
 
       await axios.post(
-        `http://localhost:5000/api/products/${product._id}/review`,
+        `http://localhost:5000/api/products/${product._id}/review`, // Dùng product._id trực tiếp
         formData,
         {
           headers: {
@@ -252,17 +253,17 @@ const ProductDetailPage = () => {
       );
 
       toast.success("Đánh giá thành công");
-
+      // Load lại sản phẩm để thấy review mới
       const data = await fetchProductById(product._id);
       setProduct(data);
 
+      // Reset form
       setComment("");
       setRating(5);
       setImages([]);
       setVideos([]);
-
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Lỗi");
+      toast.error(err.response?.data?.message || "Lỗi khi gửi đánh giá");
     } finally {
       setSubmitting(false);
     }
@@ -436,17 +437,27 @@ const ProductDetailPage = () => {
               </div>
 
               <div className="p-0">
-                {product.specs && Object.keys(product.specs).length > 0 ? (
+                {product.specs && product.specs.length > 0 ? (
                   <div className="flex flex-col text-sm">
-                    {Object.entries(product.specs).map(([key, value]: any, index) => (
-                      <div key={key} className={`flex px-5 py-3 border-b border-gray-100 last:border-0 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-                        <span className="w-2/5 text-gray-500 capitalize">{key.replace('_', ' ')}</span>
-                        <span className="w-3/5 text-gray-900 font-medium text-right">  {typeof value === "object" ? value.v : value}</span>
+                    {product.specs.map((spec: any, index: number) => (
+                      <div
+                        key={index}
+                        className={`flex px-5 py-3 border-b border-gray-100 last:border-0 ${index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
+                          }`}
+                      >
+                        <span className="w-2/5 text-gray-500 capitalize">
+                          {spec.k.replace("_", " ")}
+                        </span>
+                        <span className="w-3/5 text-gray-900 font-medium text-right">
+                          {spec.v}
+                        </span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="p-5 text-sm text-gray-500 text-center">Đang cập nhật thông số...</div>
+                  <div className="p-5 text-sm text-gray-500 text-center">
+                    Đang cập nhật thông số...
+                  </div>
                 )}
               </div>
             </div>
@@ -472,42 +483,80 @@ const ProductDetailPage = () => {
           </div>
 
           {/* FORM REVIEW */}
+          {/* FORM REVIEW */}
           {canReview && !hasReviewed && (
             <div className="border rounded-lg p-4 mb-6">
               <p className="font-semibold mb-2">Viết đánh giá</p>
-
               <StarSelector rating={rating} setRating={setRating} />
-              <label className="w-28 h-28 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-red-500 transition">
-                <ImagePlus className="w-6 h-6 text-gray-500" />
-                <span className="text-xs text-gray-500 mt-1">Thêm ảnh/video</span>
 
-                <input
-                  type="file"
-                  hidden
-                  multiple
-                  accept="image/*,video/*"
-                  onChange={(e) => {
-                    const files = Array.from(e.target.files || []);
+              {/* Khu vực hiển thị ảnh/video đã chọn (PREVIEW) */}
+              {(images.length > 0 || videos.length > 0) && (
+                <div className="flex gap-3 flex-wrap mt-4 mb-4">
+                  {/* Preview Ảnh */}
+                  {images.map((file, index) => (
+                    <div key={index} className="relative w-24 h-24 border rounded-md overflow-hidden group">
+                      <img
+                        src={URL.createObjectURL(file)}
+                        className="w-full h-full object-cover"
+                        alt="preview"
+                      />
+                      <button
+                        onClick={() => setImages(prev => prev.filter((_, i) => i !== index))}
+                        className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))}
 
-                    const imgFiles = files.filter(f => f.type.startsWith("image"));
-                    const vidFiles = files.filter(f => f.type.startsWith("video"));
+                  {/* Preview Video */}
+                  {videos.map((file, index) => (
+                    <div key={index} className="relative w-24 h-24 border rounded-md overflow-hidden group">
+                      <video
+                        src={URL.createObjectURL(file)}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        onClick={() => setVideos(prev => prev.filter((_, i) => i !== index))}
+                        className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
 
-                    setImages(prev => [...prev, ...imgFiles].slice(0, 5));
-                    setVideos(prev => [...prev, ...vidFiles].slice(0, 2));
-                  }}
+              <div className="flex items-center gap-3 mt-3">
+                <label className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-red-500 transition">
+                  <ImagePlus className="w-6 h-6 text-gray-500" />
+                  <span className="text-[10px] text-gray-500 mt-1 text-center">Thêm ảnh/video</span>
+                  <input
+                    type="file"
+                    hidden
+                    multiple
+                    accept="image/*,video/*"
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []);
+                      const imgFiles = files.filter(f => f.type.startsWith("image"));
+                      const vidFiles = files.filter(f => f.type.startsWith("video"));
+
+                      setImages(prev => [...prev, ...imgFiles].slice(0, 5));
+                      setVideos(prev => [...prev, ...vidFiles].slice(0, 2));
+                    }}
+                  />
+                </label>
+
+                <textarea
+                  className="flex-1 border rounded-md p-2 text-sm outline-none focus:ring-2 focus:ring-primary min-h-[96px]"
+                  placeholder="Nhập cảm nhận của bạn..."
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
                 />
-              </label>
-              <textarea
-                className="w-full mt-3 border rounded-md p-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-                rows={3}
-                placeholder="Nhập cảm nhận của bạn..."
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-              />
-              {/* Upload ảnh */}
+              </div>
 
               <Button
-                className="mt-3"
+                className="mt-3 w-full md:w-auto"
                 onClick={handleSubmitReview}
                 disabled={submitting}
               >
@@ -526,7 +575,6 @@ const ProductDetailPage = () => {
             {product.reviews && product.reviews.length > 0 ? (
               product.reviews.map((r: any) => (
                 <div key={r._id} className="border-b pb-3">
-
                   <div className="flex items-center justify-between">
                     <p className="font-semibold">{r.name}</p>
                     <span className="text-xs text-gray-400">
@@ -540,48 +588,34 @@ const ProductDetailPage = () => {
                   </div>
 
                   <p className="text-sm text-gray-700 mt-1">{r.comment}</p>
+
+                  {/* 🔥 PHẦN SỬA CHÍNH: HIỂN THỊ ẢNH/VIDEO TỪ CLOUDINARY */}
                   <div className="flex gap-2 mt-3 flex-wrap">
-
-                    {/* IMAGE */}
-                    {images.map((img, index) => (
-                      <div key={index} className="relative">
-                        <img
-                          src={URL.createObjectURL(img)}
-                          className="w-20 h-20 object-cover rounded border"
-                        />
-
-                        {/* Nút X */}
-                        <button
-                          onClick={() =>
-                            setImages(prev => prev.filter((_, i) => i !== index))
-                          }
-                          className="absolute -top-2 -right-2 bg-black/70 text-white rounded-full p-1 hover:bg-red-600"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
+                    {/* HIỂN THỊ IMAGE */}
+                    {r.images?.map((img: string, index: number) => (
+                      <img
+                        key={index}
+                        // Kiểm tra: Nếu là link Cloudinary (có http) thì dùng luôn
+                        // Nếu là ảnh local cũ (không có http) thì mới nối localhost
+                        src={img.startsWith('http') ? img : `http://localhost:5000/${img.replace(/\\/g, '/')}`}
+                        className="w-20 h-20 object-cover rounded border shadow-sm hover:scale-105 transition-transform cursor-pointer"
+                        alt="review"
+                        onError={(e) => {
+                          // Nếu ảnh vẫn lỗi, ẩn ảnh đó đi để tránh hiện icon vỡ
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
                     ))}
 
-                    {/* VIDEO */}
-                    {videos.map((vid, index) => (
-                      <div key={index} className="relative">
-                        <video
-                          src={URL.createObjectURL(vid)}
-                          className="w-20 h-20 object-cover rounded border"
-                        />
-
-                        {/* Nút X */}
-                        <button
-                          onClick={() =>
-                            setVideos(prev => prev.filter((_, i) => i !== index))
-                          }
-                          className="absolute -top-2 -right-2 bg-black/70 text-white rounded-full p-1 hover:bg-red-600"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
+                    {/* HIỂN THỊ VIDEO */}
+                    {r.videos?.map((vid: string, index: number) => (
+                      <video
+                        key={index}
+                        src={vid.startsWith('http') ? vid : `http://localhost:5000/${vid.replace(/\\/g, '/')}`}
+                        className="w-20 h-20 object-cover rounded border shadow-sm"
+                        controls
+                      />
                     ))}
-
                   </div>
                 </div>
               ))

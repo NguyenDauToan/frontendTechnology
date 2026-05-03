@@ -43,3 +43,15 @@ export const getDashboardStats = async () => {
     const response = await axios.get(`${ADMIN_URL}/dashboard`, getConfig());
     return response.data;
 };
+export const getCustomers = async (params?: {
+    page?: number;
+    limit?: number;
+    keyword?: string;
+    is_active?: boolean;
+}) => {
+    const response = await axios.get(`${ADMIN_URL}/customers`, {
+        ...getConfig(),
+        params
+    });
+    return response.data;
+};

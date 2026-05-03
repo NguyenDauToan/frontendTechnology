@@ -37,7 +37,7 @@ const CheckoutPage = () => {
         const initData = async () => {
             try {
                 setDataLoading(true);
-    
+
                 // ✅ 1. BUY NOW
                 if (buyNowItem) {
                     setCart({
@@ -49,14 +49,14 @@ const CheckoutPage = () => {
                         ]
                     });
                 }
-    
+
                 // ✅ 2. CHECKOUT TỪ CART (CHỈ ITEM ĐƯỢC CHỌN)
                 else if (selectedItems && selectedItems.length > 0) {
                     setCart({
                         items: selectedItems
                     });
                 }
-    
+
                 // ❌ 3. fallback (nếu user vào trực tiếp /checkout)
                 else {
                     const cartData = await getCart();
@@ -65,7 +65,7 @@ const CheckoutPage = () => {
                         setCart(cartData);
                     }
                 }
-    
+
                 // 👉 load address
                 const addressList = await getAddressesAPI();
                 if (Array.isArray(addressList)) {
@@ -73,17 +73,28 @@ const CheckoutPage = () => {
                     const defaultAddr = addressList.find((a: any) => a.isDefault);
                     setSelectedAddress(defaultAddr || addressList[0]);
                 }
-    
+
             } catch (e) {
                 toast.error("Lỗi tải dữ liệu");
             } finally {
                 setDataLoading(false);
             }
         };
-    
+
         initData();
     }, []);
+    const getRealPrice = (product) => {
+        const now = new Date();
 
+        const isFlashSaleActive =
+            product.flashSale?.isSale &&
+            new Date(product.flashSale.startTime) <= now &&
+            new Date(product.flashSale.endTime) > now;
+
+        return isFlashSaleActive
+            ? product.flashSale.salePrice
+            : product.price;
+    };
     const handlePlaceOrder = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -98,7 +109,7 @@ const CheckoutPage = () => {
 
         try {
             const itemsPrice = cart.items.reduce(
-                (acc: number, item: any) => acc + item.product.price * item.quantity,
+                (acc: number, item: any) => acc + getRealPrice(item.product) * item.quantity,
                 0
             );
 
@@ -110,7 +121,7 @@ const CheckoutPage = () => {
                     product: item.product._id,
                     name: item.product.name,
                     image: item.product.images?.[0] || item.product.image,
-                    price: item.product.price,
+                    price: getRealPrice(item.product),
                     quantity: item.quantity
                 })),
                 shippingAddress: {
@@ -308,7 +319,7 @@ const CheckoutPage = () => {
                                         <p className="text-gray-500 mt-1">Số lượng: <span className="font-bold text-gray-900">x{item.quantity}</span></p>
                                     </div>
                                     <div className="flex items-center">
-                                        <p className="font-bold text-primary">{(item.product.price * item.quantity).toLocaleString()}đ</p>
+                                        <p className="font-bold text-primary">{(getRealPrice(item.product) * item.quantity).toLocaleString()}đ</p>
                                     </div>
                                 </div>
                             ))}
@@ -317,7 +328,11 @@ const CheckoutPage = () => {
                         <div className="border-t border-gray-200 pt-4 space-y-3">
                             <div className="flex justify-between text-gray-600">
                                 <span>Tạm tính</span>
-                                <span>{cart.items.reduce((a: any, b: any) => a + b.product.price * b.quantity, 0).toLocaleString()}đ</span>
+                                <span>
+                                    {cart.items
+                                        .reduce((a, b) => a + getRealPrice(b.product) * b.quantity, 0)
+                                        .toLocaleString()}đ
+                                </span>
                             </div>
                             <div className="flex justify-between text-gray-600">
                                 <span>Phí vận chuyển</span>
@@ -327,7 +342,10 @@ const CheckoutPage = () => {
                             <div className="flex justify-between text-xl font-bold items-center">
                                 <span>Tổng thanh toán</span>
                                 <span className="text-red-600">
-                                    {(cart.items.reduce((a: any, b: any) => a + b.product.price * b.quantity, 0) + 30000).toLocaleString()}đ
+                                    {(
+                                        cart.items.reduce((a, b) => a + getRealPrice(b.product) * b.quantity, 0)
+                                        + 30000
+                                    ).toLocaleString()}đ
                                 </span>
                             </div>
                         </div>

@@ -30,12 +30,12 @@ interface ProductTableProps {
 }
 
 const ProductTable = ({ products, onDelete, onEdit, onView }: ProductTableProps) => {
-  
+
   // --- KHẮC PHỤC LỖI TẠI ĐÂY ---
   // Tạo một biến an toàn: Nếu products bị null/undefined thì dùng mảng rỗng []
   const safeProducts = Array.isArray(products) ? products : [];
 
-  const formatPrice = (value: number) => 
+  const formatPrice = (value: number) =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 
   return (
@@ -64,16 +64,16 @@ const ProductTable = ({ products, onDelete, onEdit, onView }: ProductTableProps)
           ) : (
             safeProducts.map((product) => (
               <TableRow key={product.id} className="hover:bg-gray-50/50 transition-colors">
-                
+
                 {/* Cột Hình ảnh */}
                 <TableCell>
                   <div className="w-12 h-12 rounded-md border border-gray-200 overflow-hidden bg-white flex items-center justify-center">
                     {product.image ? (
-                      <img 
-                        src={product.image} 
-                        alt={product.name} 
+                      <img
+                        src={product.image}
+                        alt={product.name}
                         className="w-full h-full object-cover"
-                        onError={(e) => { e.currentTarget.src = ""; }} 
+                        onError={(e) => { e.currentTarget.src = ""; }}
                       />
                     ) : (
                       <ImageIcon className="w-5 h-5 text-gray-300" />
@@ -82,19 +82,50 @@ const ProductTable = ({ products, onDelete, onEdit, onView }: ProductTableProps)
                 </TableCell>
 
                 <TableCell className="font-medium">
-                    <div className="line-clamp-2 max-w-[220px]" title={product.name}>
-                        {product.name}
+                  <div className="relative group max-w-[220px]">
+
+                    {/* Tên */}
+                    <div className="line-clamp-2 cursor-pointer">
+                      {product.name}
                     </div>
+
+                    {/* 🔥 Tooltip specs */}
+                    {product.originalData?.specs?.length > 0 && (
+                      <div className="absolute left-0 top-full mt-2 w-64 bg-white border border-gray-200 shadow-lg rounded-md p-3 
+                      opacity-0 invisible group-hover:opacity-100 group-hover:visible 
+                      transition duration-200 z-50">
+
+                        <p className="text-xs font-semibold mb-2 text-gray-700">
+                          Thông số kỹ thuật
+                        </p>
+
+                        <div className="text-xs space-y-1 max-h-40 overflow-auto">
+                          {product.originalData.specs.map((spec: any, i: number) => (
+                            <div key={i} className="flex justify-between gap-2">
+                              <span className="text-gray-500">
+                                {spec.k.replace(/_/g, " ")}
+                              </span>
+                              <span className="font-medium text-right">
+                                {spec.v}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+
+                      </div>
+                    )}
+
+                  </div>
                 </TableCell>
                 <TableCell className="font-mono text-xs text-gray-500">{product.sku}</TableCell>
                 <TableCell>{product.category}</TableCell>
                 <TableCell className="text-right font-medium text-gray-900">
-                    {formatPrice(product.price)}
+                  {formatPrice(product.price)}
                 </TableCell>
                 <TableCell className="text-center">
-                    <span className={product.stock < 10 ? "text-red-500 font-bold" : "text-gray-700"}>
-                        {product.stock}
-                    </span>
+                  <span className={product.stock < 10 ? "text-red-500 font-bold" : "text-gray-700"}>
+                    {product.stock}
+                  </span>
                 </TableCell>
                 <TableCell className="text-center">
                   {product.status === "active" && <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200 shadow-none">Hoạt động</Badge>}
@@ -104,22 +135,22 @@ const ProductTable = ({ products, onDelete, onEdit, onView }: ProductTableProps)
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">
                     {onView && (
-                        <button 
-                            onClick={() => onView(product.id)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                            title="Xem chi tiết"
-                        >
-                            <Eye size={16} />
-                        </button>
+                      <button
+                        onClick={() => onView(product.id)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                        title="Xem chi tiết"
+                      >
+                        <Eye size={16} />
+                      </button>
                     )}
-                    <button 
+                    <button
                       onClick={() => onEdit(product.id)}
                       className="p-2 text-amber-600 hover:bg-amber-50 rounded-md transition-colors"
                       title="Sửa"
                     >
                       <Edit size={16} />
                     </button>
-                    <button 
+                    <button
                       onClick={() => onDelete(product.id)}
                       className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
                       title="Xóa"

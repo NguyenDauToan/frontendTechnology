@@ -28,11 +28,17 @@ const OrderDetailDialog = ({ order, onUpdate }: OrderDetailDialogProps) => {
     useEffect(() => {
         setLocalOrder(order);
     }, [order]);
-    const hasReviewed = (item: any) => {
+    const hasReviewed = (productId: string) => {
         const user = JSON.parse(localStorage.getItem("user") || "null");
         if (!user) return false;
 
-        return item?.reviews?.some((r: any) => r.user === user._id);
+        const item = localOrder.orderItems?.find(
+            (i: any) => String(i.product) === String(productId)
+        );
+
+        return item?.reviews?.some(
+            (r: any) => String(r.user) === String(user._id)
+        ) || false;
     };
     const isCancelled = localOrder.status === 'Cancelled';
 
@@ -98,6 +104,10 @@ const OrderDetailDialog = ({ order, onUpdate }: OrderDetailDialogProps) => {
             setSubmittingReview(false);
         }
     };
+    const canReviewOrder =
+        localOrder.status === "Completed" &&
+        localOrder.orderItems?.length > 0;
+    const isReviewed = hasReviewed(localOrder.orderItems?.[0]?.product);
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -117,27 +127,33 @@ const OrderDetailDialog = ({ order, onUpdate }: OrderDetailDialogProps) => {
                         </span>
 
                         {/* NÚT ĐÁNH GIÁ NHANH */}
-                        {localOrder.status === "Completed" && (
+                        {canReviewOrder && (
                             <Button
                                 size="sm"
                                 className="bg-orange-500 hover:bg-orange-600 text-white"
-                                onClick={() => navigate(`/product/${localOrder.orderItems[0].product}?review=true`)}
+                                onClick={() =>
+                                    navigate(
+                                        `/product/${localOrder.orderItems[0].product}?review=true`
+                                    )
+                                }
                             >
                                 Đánh giá đơn hàng
                             </Button>
                         )}
                     </div>
-                    <div className="mt-2">
-                        {localOrder.status === "Completed" ? (
-                            <span className="text-xs font-semibold px-2 py-1 rounded bg-yellow-100 text-yellow-700">
-                                Chưa đánh giá
-                            </span>
-                        ) : (
-                            <span className="text-xs font-semibold px-2 py-1 rounded bg-gray-100 text-gray-500">
-                                Chưa thể đánh giá
-                            </span>
-                        )}
-                    </div>
+
+                    <span className={`text-xs font-semibold px-2 py-1 rounded ${isReviewed
+                        ? "bg-green-100 text-green-700"
+                        : localOrder.status === "Completed"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-gray-100 text-gray-500"
+                        }`}>
+                        {isReviewed
+                            ? "Đã đánh giá"
+                            : localOrder.status === "Completed"
+                                ? "Chưa đánh giá"
+                                : "Chưa thể đánh giá"}
+                    </span>
                 </DialogHeader>
 
                 <div className="space-y-6 py-2">

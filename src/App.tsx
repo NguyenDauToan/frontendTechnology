@@ -31,6 +31,7 @@ import WarrantyPage from "./pages/admin/WarrantyPage";
 import WarrantyRequestPage from "./pages/user/WarrantyRequestPage";
 import PaymentSuccess from "./pages/user/PaymentSuccess";
 import CategoryProductsPage from "./pages/user/CategoryProductsPage";
+import CustomerPage from "./pages/admin/CustomerPage";
 // --- Common ---
 import NotFound from "./pages/admin/NotFound";
 
@@ -83,6 +84,7 @@ const App = () => (
               <Route path="warranty" element={<WarrantyPage />} />
               {/* --- ROUTE MỚI CHO QUẢN LÝ NHÂN SỰ --- */}
               <Route path="users" element={<UserList />} />          {/* /admin/users */}
+              <Route path="customers" element={<CustomerPage />} />          {/* /admin/customers */}
             </Route>
 
           </Route>

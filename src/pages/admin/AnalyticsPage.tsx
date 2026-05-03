@@ -27,8 +27,8 @@ const AnalyticsPage = () => {
                     console.error("API trả về dữ liệu không phải mảng:", result);
                     setData([]); // Nếu lỗi, set về mảng rỗng để không crash
                 }
-            } catch (error) {
-                console.error("Lỗi tải thống kê:", error);
+            } catch (error: any) {
+                console.error("Lỗi tải thống kê:", error?.response?.data || error.message);
                 setData([]);
             } finally {
                 setLoading(false);
