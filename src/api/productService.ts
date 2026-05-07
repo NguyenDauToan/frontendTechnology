@@ -22,9 +22,21 @@ export const uploadImageAPI = async (file: File) => {
 
 // --- CÁC HÀM SẢN PHẨM ---
 
-export const fetchProducts = async () => {
-    const response = await axios.get(`${API_URL}/products`, getAuthHeader());
-    return response.data; 
+export const fetchProducts = async (params?: {
+    brand?: string;
+    series?: string;
+    category?: string;
+    categorySlug?: string;
+    search?: string;
+    minPrice?: number;
+    maxPrice?: number;
+}) => {
+    const response = await axios.get(`${API_URL}/products`, {
+        ...getAuthHeader(),
+        params,
+    });
+
+    return response.data;
 };
 
 export const fetchProductById = async (id: string) => {
@@ -80,7 +92,20 @@ export const fetchProductsByCategory = async (slug: string) => {
 };
 
 export const fetchFilteredProducts = async (params: any) => {
-    const response = await axios.get(`${API_URL}/products`, { ...getAuthHeader(), params });
+    // 🔥 Nếu có slug → dùng API riêng
+    if (params.categorySlug) {
+        const response = await axios.get(
+            `${API_URL}/products/category/${params.categorySlug}`
+        );
+        return response.data;
+    }
+
+    // 🔥 Không có slug → dùng filter thường
+    const response = await axios.get(`${API_URL}/products`, {
+        ...getAuthHeader(),
+        params
+    });
+
     return response.data;
 };
 export const fetchMyProductsAPI = async () => {

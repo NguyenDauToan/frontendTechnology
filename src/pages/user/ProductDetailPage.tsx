@@ -616,7 +616,7 @@ const ProductDetailPage = () => {
                         controls
                       />
                     ))}
-                  </div>
+                  </div>  
                 </div>
               ))
             ) : (

@@ -26,16 +26,22 @@ const menuItems = [
   { id: "dashboard", label: "Tổng quan", icon: LayoutDashboard, path: "/admin" },
   { id: "products", label: "Sản phẩm", icon: Package, path: "/admin/products" },
   { id: "categories", label: "Danh mục", icon: Tags, path: "/admin/categories" },
-  // 2. Thêm mục Quản lý kho vào đây
+
+  // kho
   { id: "warehouse", label: "Quản lý kho", icon: Archive, path: "/admin/warehousePage" },
+
   { id: "orders", label: "Đơn hàng", icon: ShoppingCart, path: "/admin/orders" },
   { id: "staff", label: "Nhân viên", icon: UserCog, path: "/admin/users" },
   { id: "customers", label: "Khách hàng", icon: Users, path: "/admin/customers" },
   { id: "analytics", label: "Thống kê", icon: BarChart3, path: "/admin/analytics" },
-  { id: "settings", label: "Cài đặt", icon: Settings, path: "/admin/settings" },
+
+  { id: "brands", label: "Thương hiệu", icon: Settings, path: "/admin/brands" },
+
+  // 👉 NEW
+  { id: "series", label: "Series", icon: Archive, path: "/admin/series" },
+
   { id: "warranty", label: "Bảo hành", icon: Wrench, path: "/admin/warranty" },
 ];
-
 const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();

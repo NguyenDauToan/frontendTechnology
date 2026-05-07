@@ -4,41 +4,91 @@ import { fetchProducts } from "@/api/productService";
 import { Loader2, AlertCircle, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { fetchBrands } from "@/api/brandService";
+import { fetchSeriesByBrand } from "@/api/seriesService";
 
 const FeaturedProducts = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [brands, setBrands] = useState<any[]>([]);
+  const [seriesList, setSeriesList] = useState<any[]>([]);
 
+  const [selectedBrand, setSelectedBrand] = useState("");
+  const [selectedSeries, setSelectedSeries] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    const loadProducts = async () => {
+    const init = async () => {
       try {
         setIsLoading(true);
-        const data = await fetchProducts();
 
-        let dataToSet = [];
-        if (Array.isArray(data)) {
-          dataToSet = data;
-        } else if (data && Array.isArray(data.data)) {
-          dataToSet = data.data;
-        } else if (data && Array.isArray(data.products)) {
-          dataToSet = data.products;
-        }
+        const [brandData, productData] = await Promise.all([
+          fetchBrands(),
+          fetchProducts(),
+        ]);
+
+        setBrands(brandData);
+
+        const dataToSet =
+          Array.isArray(productData)
+            ? productData
+            : productData?.data || productData?.products || [];
 
         setProducts(dataToSet);
       } catch (err) {
-        console.error("Lỗi khi tải sản phẩm:", err);
-        setError("Không thể tải danh sách sản phẩm. Vui lòng thử lại sau.");
+        console.error(err);
+        setError("Không thể tải sản phẩm");
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadProducts();
+    init();
   }, []);
+  const handleBrandChange = async (brandId: string) => {
+    setSelectedBrand(brandId);
+    setSelectedSeries("");
 
+    try {
+      if (brandId) {
+        const series = await fetchSeriesByBrand(brandId);
+        setSeriesList(series);
+      } else {
+        setSeriesList([]);
+      }
+
+      const data = await fetchProducts({ brand: brandId });
+
+      const dataToSet =
+        Array.isArray(data)
+          ? data
+          : data?.data || data?.products || [];
+
+      setProducts(dataToSet);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  const handleSeriesChange = async (seriesId: string) => {
+    setSelectedSeries(seriesId);
+
+    try {
+      const data = await fetchProducts({
+        brand: selectedBrand,
+        series: seriesId,
+      });
+
+      const dataToSet =
+        Array.isArray(data)
+          ? data
+          : data?.data || data?.products || [];
+
+      setProducts(dataToSet);
+    } catch (err) {
+      console.error(err);
+    }
+  };
   if (isLoading) {
     return (
       <section className="py-6">
@@ -87,7 +137,38 @@ const FeaturedProducts = () => {
               Xem thêm &raquo;
             </a>
           </div>
+          <div className="flex gap-3 mb-4 flex-wrap">
 
+            {/* Brand */}
+            <select
+              value={selectedBrand}
+              onChange={(e) => handleBrandChange(e.target.value)}
+              className="border px-3 py-1 rounded text-sm"
+            >
+              <option value="">Tất cả thương hiệu</option>
+              {brands.map((b) => (
+                <option key={b._id} value={b._id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+
+            {/* Series */}
+            <select
+              value={selectedSeries}
+              onChange={(e) => handleSeriesChange(e.target.value)}
+              className="border px-3 py-1 rounded text-sm"
+              disabled={!selectedBrand}
+            >
+              <option value="">Tất cả series</option>
+              {seriesList.map((s) => (
+                <option key={s._id} value={s._id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+
+          </div>
           {products.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
               {products.map((product) => {

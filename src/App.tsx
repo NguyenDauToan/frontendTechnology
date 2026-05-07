@@ -32,6 +32,8 @@ import WarrantyRequestPage from "./pages/user/WarrantyRequestPage";
 import PaymentSuccess from "./pages/user/PaymentSuccess";
 import CategoryProductsPage from "./pages/user/CategoryProductsPage";
 import CustomerPage from "./pages/admin/CustomerPage";
+import BrandPage from "./pages/admin/BrandPage";
+import SeriesAdminPage from "./pages/admin/SeriesAdminPage";
 // --- Common ---
 import NotFound from "./pages/admin/NotFound";
 
@@ -44,34 +46,35 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          
+
           {/* =========================================
               PHẦN 1: PUBLIC ROUTES (KHÁCH HÀNG)
               Không cần đăng nhập cũng xem được
-          ========================================= */} 
+          ========================================= */}
           <Route element={<UserLayout />}>
             <Route path="/" element={<HomePage />} />
+            <Route path="/category/:slug" element={<CategoryProductsPage />} />
+            {/* Trang Login/Register nằm ngoài Layout */}
+            <Route path="/login" element={<AuthPage />} />
+            {/* Các trang chức năng của User */}
+            <Route path="/product/:id" element={<ProductDetailPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/addresses" element={<AddressBookPage />} />
+            <Route path="/orders" element={<MyOrdersPage />} />
+            <Route path="/warrantypage" element={<WarrantyRequestPage />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
           </Route>
 
-          {/* Trang Login/Register nằm ngoài Layout */}
-          <Route path="/login" element={<AuthPage />} />
-          <Route path="/category/:slug" element={<CategoryProductsPage />} />
-          {/* Các trang chức năng của User */}
-          <Route path="/product/:id" element={<ProductDetailPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/addresses" element={<AddressBookPage />} />
-          <Route path="/orders" element={<MyOrdersPage />} />
-          <Route path="/warrantypage" element={<WarrantyRequestPage/>} />
-          <Route path="/payment-success" element={<PaymentSuccess />} />
+
           {/* =========================================
               PHẦN 2: PROTECTED ROUTES (QUẢN TRỊ VIÊN)
               Phải đăng nhập + Role Admin/Staff mới vào được
           ========================================= */}
-          
+
           {/* Lớp bảo vệ: Check quyền trước */}
           <Route element={<ProtectedRoute />}>
-            
+
             {/* Nếu qua được lớp bảo vệ -> Vào AdminLayout */}
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Dashboard />} />              {/* /admin */}
@@ -85,6 +88,8 @@ const App = () => (
               {/* --- ROUTE MỚI CHO QUẢN LÝ NHÂN SỰ --- */}
               <Route path="users" element={<UserList />} />          {/* /admin/users */}
               <Route path="customers" element={<CustomerPage />} />          {/* /admin/customers */}
+              <Route path="brands" element={<BrandPage />} />          {/* /admin/customers */}
+              <Route path="series" element={<SeriesAdminPage />} />
             </Route>
 
           </Route>
@@ -94,7 +99,7 @@ const App = () => (
               PHẦN 3: CÁC TRANG KHÁC
           ========================================= */}
           <Route path="*" element={<NotFound />} />
-          
+
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

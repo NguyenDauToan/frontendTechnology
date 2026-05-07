@@ -62,7 +62,6 @@ const CategoryProductsPage = () => {
 
   return (
     <>
-      <Header />
       <PromoBanner />
       <div className="container mx-auto px-4 py-6 max-w-7xl">
         <div className="grid grid-cols-12 gap-5">

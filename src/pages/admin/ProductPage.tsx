@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ProductTable, { Product } from "@/components/products/ProductTable";
 import { deleteProductAPI, fetchProducts, fetchProductById } from "@/api/productService";
 import AddProductModal from "./AddProductPage"; // Kiểm tra lại tên file thực tế của bạn
@@ -6,6 +6,7 @@ import EditProductModal from "./EditProductModal";
 import ViewProductModal from "./ViewProductModal";
 import { Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { Product as ProductType } from "@/types/product";
 
 const ProductPage = () => {
     // 1. State quản lý dữ liệu và trạng thái loading
@@ -16,34 +17,38 @@ const ProductPage = () => {
     // 2. State quản lý Modal
     const [modalState, setModalState] = useState<{
         type: 'ADD' | 'EDIT' | 'VIEW' | null;
-        selectedProduct: any | null;
-    }>({ type: null, selectedProduct: null });
+        selectedProduct: ProductType | null;
+    }>({
+        type: null,
+        selectedProduct: null
+    });
 
     // 3. Hàm load dữ liệu từ API
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
             const data = await fetchProducts();
-            
+
             // Map dữ liệu từ API sang cấu trúc Product cho bảng
             const mappedProducts: Product[] = data.map((item: any) => ({
                 id: item._id,
                 name: item.name,
                 sku: item.sku,
                 category: item.category?.name || "Chưa phân loại",
+                brand: item.brand?.name || "No brand", // 👈 thêm dòng này
                 price: item.price,
                 stock: item.stock,
-                
-                // --- SỬA Ở ĐÂY: Lấy ảnh đầu tiên trong mảng images ---
-                image: (item.images && item.images.length > 0) ? item.images[0] : "", 
-                // ---------------------------------------------------
-
-                status: !item.is_active ? "inactive" : (item.stock < 10 ? "low_stock" : "active"),
-                // Lưu trữ dữ liệu gốc nếu cần dùng thêm
-                originalData: item 
+                image: item.images?.[0] || "",
+                status: !item.is_active
+                    ? "inactive"
+                    : item.stock === 0
+                        ? "out_of_stock"
+                        : item.stock < 10
+                            ? "low_stock"
+                            : "active",
+                originalData: item
             }));
-
             setProducts(mappedProducts);
         } catch (err) {
             console.error(err);
@@ -52,27 +57,28 @@ const ProductPage = () => {
         } finally {
             setLoading(false);
         }
-    };
-
-    // Gọi loadData khi component mount
-    useEffect(() => {
-        loadData();
     }, []);
+
+   
 
     // 4. Các hàm xử lý hành động (Action Handlers)
 
     // Xóa sản phẩm
     const handleDelete = async (id: string) => {
-        if (window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này không? Hành động này không thể hoàn tác.")) {
-            try {
-                await deleteProductAPI(id);
-                toast.success("Đã xóa sản phẩm thành công");
-                // Cập nhật UI ngay lập tức mà không cần reload toàn bộ
-                setProducts((prev) => prev.filter((p) => p.id !== id));
-            } catch (error) {
-                toast.error("Xóa thất bại. Vui lòng thử lại.");
+        toast("Xác nhận xóa?", {
+            action: {
+                label: "Xóa",
+                onClick: async () => {
+                    try {
+                        await deleteProductAPI(id);
+                        setProducts(prev => prev.filter(p => p.id !== id));
+                        toast.success("Đã xóa");
+                    } catch {
+                        toast.error("Xóa thất bại");
+                    }
+                }
             }
-        }
+        });
     };
 
     // Mở Modal Thêm mới
@@ -81,24 +87,25 @@ const ProductPage = () => {
     };
 
     // Mở Modal Sửa (Gọi API lấy chi tiết mới nhất)
-    const openEditModal = async (id: string) => {
-        try {
-            // Hiển thị loading nhẹ hoặc disable nút trong khi fetch
-            const fullProductData = await fetchProductById(id);
-            setModalState({ type: 'EDIT', selectedProduct: fullProductData });
-        } catch (error) {
-            toast.error("Không thể tải thông tin chi tiết sản phẩm");
-        }
+    const openEditModal = (id: string) => {
+        const product = products.find(p => p.id === id);
+        if (!product) return;
+
+        setModalState({
+            type: 'EDIT',
+            selectedProduct: product.originalData
+        });
     };
 
     // Mở Modal Xem chi tiết
-    const openViewModal = async (id: string) => {
-        try {
-            const fullProductData = await fetchProductById(id);
-            setModalState({ type: 'VIEW', selectedProduct: fullProductData });
-        } catch (error) {
-            toast.error("Không thể tải thông tin chi tiết sản phẩm");
-        }
+    const openViewModal = (id: string) => {
+        const product = products.find(p => p.id === id);
+        if (!product) return;
+
+        setModalState({
+            type: 'VIEW',
+            selectedProduct: product.originalData
+        });
     };
 
     // Đóng Modal
@@ -140,8 +147,8 @@ const ProductPage = () => {
                 ) : error ? (
                     <div className="flex flex-col items-center justify-center py-20 text-red-500">
                         <p className="font-medium">{error}</p>
-                        <button 
-                            onClick={loadData} 
+                        <button
+                            onClick={loadData}
                             className="mt-4 text-sm underline hover:text-red-700"
                         >
                             Thử lại
@@ -158,7 +165,7 @@ const ProductPage = () => {
             </div>
 
             {/* --- MODALS AREA --- */}
-            
+
             {/* Modal Thêm */}
             {modalState.type === 'ADD' && (
                 <AddProductModal

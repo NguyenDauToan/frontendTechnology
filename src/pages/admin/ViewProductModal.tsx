@@ -9,13 +9,13 @@ interface ViewProductModalProps {
 const ViewProductModal = ({ isOpen, onClose, product }: ViewProductModalProps) => {
   if (!isOpen || !product) return null;
 
-  const formatPrice = (value: number) => 
+  const formatPrice = (value: number) =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-        
+
         {/* Header */}
         <div className="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
           <h2 className="text-xl font-bold text-gray-800">Chi tiết sản phẩm</h2>
@@ -28,11 +28,32 @@ const ViewProductModal = ({ isOpen, onClose, product }: ViewProductModalProps) =
         <div className="p-6 overflow-y-auto flex-1">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Ảnh */}
-            <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border">
-              {product.images && product.images.length > 0 ? (
-                <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
-              ) : (
-                <div className="flex items-center justify-center h-full text-gray-400">Không có ảnh</div>
+            <div>
+              <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border">
+                {product.images?.length > 0 ? (
+                  <img
+                    src={product.images[0]}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-400">
+                    Không có ảnh
+                  </div>
+                )}
+              </div>
+
+              {/* Thumbnail */}
+              {product.images?.length > 1 && (
+                <div className="flex gap-2 mt-2 overflow-x-auto">
+                  {product.images.map((img: string, idx: number) => (
+                    <img
+                      key={idx}
+                      src={img}
+                      className="w-16 h-16 object-cover border rounded"
+                    />
+                  ))}
+                </div>
               )}
             </div>
 
@@ -47,34 +68,47 @@ const ViewProductModal = ({ isOpen, onClose, product }: ViewProductModalProps) =
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-                   <p className="text-xs text-blue-600 font-medium">Giá bán</p>
-                   <p className="text-lg font-bold text-blue-700">{formatPrice(product.price)}</p>
+                  <p className="text-xs text-blue-600 font-medium">Giá bán</p>
+                  <p className="text-lg font-bold text-blue-700">{formatPrice(product.price)}</p>
                 </div>
                 <div className="p-3 bg-green-50 rounded-lg border border-green-100">
-                   <p className="text-xs text-green-600 font-medium">Tồn kho</p>
-                   <p className="text-lg font-bold text-green-700">{product.stock}</p>
+                  <p className="text-xs text-green-600 font-medium">Tồn kho</p>
+                  <p className="text-lg font-bold text-green-700">{product.stock}</p>
                 </div>
               </div>
 
               <div className="space-y-2 text-sm">
-                <p><span className="font-semibold">Danh mục:</span> {product.category?.name || product.category || "---"}</p>
+                <p>
+                  <span className="font-semibold">Danh mục:</span>{" "}
+                  {product.category?.name || product.category || "---"}
+                </p>
+
+                <p>
+                  <span className="font-semibold">Thương hiệu:</span>{" "}
+                  {product.brand?.name || product.brand || "---"}
+                </p>
                 <p><span className="font-semibold">Bảo hành:</span> {product.warranty_months} tháng</p>
-                <p><span className="font-semibold">Giá nhập:</span> {formatPrice(product.import_price || 0)}</p>
+                <p>
+                  <span className="font-semibold">Giá nhập:</span>{" "}
+                  {product.import_price
+                    ? formatPrice(product.import_price)
+                    : "Không có quyền xem"}
+                </p>
                 <p><span className="font-semibold">Giá gốc:</span> {formatPrice(product.original_price || 0)}</p>
               </div>
 
               {/* Specs */}
               {product.specs && product.specs.length > 0 && (
                 <div>
-                   <h4 className="font-semibold border-b pb-1 mb-2">Thông số kỹ thuật</h4>
-                   <ul className="grid grid-cols-2 gap-2 text-sm">
-                      {product.specs.map((spec: any, idx: number) => (
-                        <li key={idx} className="flex justify-between border-b border-dashed pb-1">
-                          <span className="text-gray-500">{spec.k}:</span>
-                          <span className="font-medium">{spec.v}</span>
-                        </li>
-                      ))}
-                   </ul>
+                  <h4 className="font-semibold border-b pb-1 mb-2">Thông số kỹ thuật</h4>
+                  <ul className="grid grid-cols-2 gap-2 text-sm">
+                    {product.specs.map((spec: any, idx: number) => (
+                      <li key={idx} className="flex justify-between border-b border-dashed pb-1">
+                        <span className="text-gray-500">{spec.k}:</span>
+                        <span className="font-medium">{spec.v}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </div>
