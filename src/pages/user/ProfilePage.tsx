@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom"; // Import Link
 import { getProfileAPI } from "@/api/authApi";
-import Header from "@/components/layout/user/Header";
 import { Button } from "@/components/ui/button";
 import { Loader2, User, Mail, Phone, MapPin, Shield, LogOut, Camera, ChevronRight, Edit2 } from "lucide-react";
 import { toast } from "sonner";
-import PromoBanner from "./PromoBanner";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -49,8 +47,7 @@ const ProfilePage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-      <PromoBanner/>
+ 
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Page Title */}
         <div className="mb-6">
