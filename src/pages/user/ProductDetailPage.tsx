@@ -277,8 +277,7 @@ const ProductDetailPage = () => {
 
   return (
     <div className="bg-[#f1f5f9] min-h-screen pb-12">
-      <Header />
-      <PromoBanner />
+      
 
       {/* Max-w-7xl cho form rộng rãi chuẩn web PC */}
       <div className="container mx-auto px-4 py-6 max-w-7xl animate-fade-in">

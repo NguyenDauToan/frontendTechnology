@@ -195,7 +195,6 @@ const Header = () => {
                     ) : (
                       <>
                         <Link to="/login"><div className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md cursor-pointer"><LogIn className="h-4 w-4 text-primary" />Đăng nhập</div></Link>
-                        <Link to="/register"><div className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md cursor-pointer"><UserPlus className="h-4 w-4 text-green-600" />Đăng ký tài khoản</div></Link>
                       </>
                     )}
                   </div>
