@@ -193,8 +193,7 @@ const CheckoutPage = () => {
 
     return (
         <>
-            <Header />
-            <PromoBanner />
+        
             <div className="container mx-auto px-4 py-8 max-w-6xl">
                 <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
                     <ShoppingBag className="w-6 h-6" /> Xác nhận thanh toán

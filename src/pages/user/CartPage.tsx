@@ -133,8 +133,7 @@ const CartPage = () => {
 
   return (
     <>
-      <Header />
-      <PromoBanner />
+    
 
       <div className="container mx-auto max-w-6xl py-8">
         <h1 className="text-2xl font-bold mb-6">Giỏ hàng</h1>
