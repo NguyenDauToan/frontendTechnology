@@ -5,13 +5,14 @@ import {
   ShoppingCart,
   Users,
   BarChart3,
-  Settings,
   LogOut,
   ChevronLeft,
   ChevronRight,
-  Archive, // 1. Import icon Archive cho kho,
+  Archive,
   UserCog,
-  Wrench
+  Wrench,
+  BadgeCheck,
+  Layers3
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -26,20 +27,13 @@ const menuItems = [
   { id: "dashboard", label: "Tổng quan", icon: LayoutDashboard, path: "/admin" },
   { id: "products", label: "Sản phẩm", icon: Package, path: "/admin/products" },
   { id: "categories", label: "Danh mục", icon: Tags, path: "/admin/categories" },
-
-  // kho
+  { id: "brands", label: "Thương hiệu", icon: BadgeCheck, path: "/admin/brands" },
+  { id: "series", label: "Series", icon: Layers3, path: "/admin/series" },
   { id: "warehouse", label: "Quản lý kho", icon: Archive, path: "/admin/warehousePage" },
-
   { id: "orders", label: "Đơn hàng", icon: ShoppingCart, path: "/admin/orders" },
   { id: "staff", label: "Nhân viên", icon: UserCog, path: "/admin/users" },
   { id: "customers", label: "Khách hàng", icon: Users, path: "/admin/customers" },
   { id: "analytics", label: "Thống kê", icon: BarChart3, path: "/admin/analytics" },
-
-  { id: "brands", label: "Thương hiệu", icon: Settings, path: "/admin/brands" },
-
-  // 👉 NEW
-  { id: "series", label: "Series", icon: Archive, path: "/admin/series" },
-
   { id: "warranty", label: "Bảo hành", icon: Wrench, path: "/admin/warranty" },
 ];
 const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {

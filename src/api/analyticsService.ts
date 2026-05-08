@@ -4,18 +4,43 @@ const API = axios.create({
     baseURL: "http://localhost:5000"
 });
 
-// 👇 THÊM ĐOẠN NÀY
+// attach token
 API.interceptors.request.use((config) => {
-    const userInfo = JSON.parse(localStorage.getItem("user") || "{}");
+
+    const userInfo = JSON.parse(
+        localStorage.getItem("user") || "{}"
+    );
 
     if (userInfo?.token) {
-        config.headers.Authorization = `Bearer ${userInfo.token}`;
+        config.headers.Authorization =
+            `Bearer ${userInfo.token}`;
     }
 
     return config;
 });
 
-export const fetchRevenueStats = async (type: 'daily' | 'monthly') => {
-    const response = await API.get(`/api/analytics/revenue?type=${type}`);
+// fetch revenue stats
+export const fetchRevenueStats = async (
+    type: 'daily' | 'monthly',
+    fromDate?: string,
+    toDate?: string
+) => {
+
+    const params = new URLSearchParams();
+
+    params.append("type", type);
+
+    if (fromDate) {
+        params.append("fromDate", fromDate);
+    }
+
+    if (toDate) {
+        params.append("toDate", toDate);
+    }
+
+    const response = await API.get(
+        `/api/analytics/revenue?${params.toString()}`
+    );
+
     return response.data;
 };

@@ -37,7 +37,7 @@ export const uploadImageAPI = async (file: File) => {
 // ================= PRODUCTS (MY PURCHASED) =================
 export const fetchMyProductsAPI = async () => {
     const response = await axios.get(
-        `${API_URL}/orders/my-products`,
+        `${API_URL}/warranty/my-products`,
         getAuthConfig()
     );
 

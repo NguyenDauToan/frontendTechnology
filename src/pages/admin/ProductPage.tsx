@@ -6,7 +6,7 @@ import EditProductModal from "./EditProductModal";
 import ViewProductModal from "./ViewProductModal";
 import { Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { Product as ProductType } from "@/types/product";
+import {  ProductType } from "@/types/product";
 
 const ProductPage = () => {
     // 1. State quản lý dữ liệu và trạng thái loading
@@ -59,6 +59,9 @@ const ProductPage = () => {
         }
     }, []);
 
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
    
 
     // 4. Các hàm xử lý hành động (Action Handlers)
@@ -93,7 +96,7 @@ const ProductPage = () => {
 
         setModalState({
             type: 'EDIT',
-            selectedProduct: product.originalData
+            selectedProduct: product.originalData as ProductType
         });
     };
 
@@ -104,7 +107,7 @@ const ProductPage = () => {
 
         setModalState({
             type: 'VIEW',
-            selectedProduct: product.originalData
+            selectedProduct: product.originalData as ProductType    
         });
     };
 

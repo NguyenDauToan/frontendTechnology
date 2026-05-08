@@ -167,7 +167,7 @@ const FeaturedProducts = () => {
                 </option>
               ))}
             </select>
-
+              
           </div>
           {products.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
