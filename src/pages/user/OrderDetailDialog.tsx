@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { cancelOrder } from "@/api/orderService";
 
 interface OrderDetailDialogProps {
     order: any;
@@ -23,7 +24,9 @@ const OrderDetailDialog = ({ order, onUpdate }: OrderDetailDialogProps) => {
     const [rating, setRating] = useState(5);
     const [comment, setComment] = useState("");
     const [submittingReview, setSubmittingReview] = useState(false);
-
+    const [isCancelling, setIsCancelling] = useState(false);
+    const [cancelReason, setCancelReason] = useState("");
+    const [showCancelBox, setShowCancelBox] = useState(false);
     // Đồng bộ localOrder với prop order mỗi khi mở modal đơn hàng khác nhau
     useEffect(() => {
         setLocalOrder(order);
@@ -41,7 +44,36 @@ const OrderDetailDialog = ({ order, onUpdate }: OrderDetailDialogProps) => {
         ) || false;
     };
     const isCancelled = localOrder.status === 'Cancelled';
+    const handleCancelOrder = async () => {
+        const confirmCancel = window.confirm(
+            "Bạn có chắc muốn hủy đơn hàng này?"
+        );
 
+        if (!confirmCancel) return;
+
+        try {
+            setIsCancelling(true);
+            await cancelOrder(localOrder._id, cancelReason);
+
+            toast.success("Đã hủy đơn hàng");
+
+            setLocalOrder({
+                ...localOrder,
+                status: "Cancelled"
+            });
+
+            if (onUpdate) {
+                onUpdate();
+            }
+
+        } catch (error: any) {
+            toast.error(
+                error.response?.data?.message || "Hủy đơn thất bại"
+            );
+        } finally {
+            setIsCancelling(false);
+        }
+    };
     // HÀM XỬ LÝ KHÁCH HÀNG BẤM "ĐÃ NHẬN ĐƯỢC HÀNG"
     const handleConfirmReceived = async () => {
         if (!confirm("Xác nhận bạn đã nhận được hàng và sản phẩm không có vấn đề gì?")) return;
@@ -184,6 +216,62 @@ const OrderDetailDialog = ({ order, onUpdate }: OrderDetailDialogProps) => {
                                     {isConfirming ? <Loader2 className="animate-spin mr-2 w-5 h-5" /> : <CheckCircle2 className="mr-2 w-5 h-5" />}
                                     Đã nhận được hàng
                                 </Button>
+                            </div>
+                        )}
+                        {["Pending", "Confirmed"].includes(localOrder.status) && (
+                            <div className="mt-4 space-y-3">
+
+                                {!showCancelBox ? (
+                                    <Button
+                                        variant="destructive"
+                                        onClick={() => setShowCancelBox(true)}
+                                        className="w-full"
+                                    >
+                                        <XCircle className="w-4 h-4 mr-2" />
+                                        Hủy đơn hàng
+                                    </Button>
+                                ) : (
+                                    <>
+                                        <textarea
+                                            value={cancelReason}
+                                            onChange={(e) => setCancelReason(e.target.value)}
+                                            placeholder="Nhập lý do hủy đơn hàng..."
+                                            className="w-full border rounded-lg p-3 text-sm min-h-[90px] outline-none focus:ring-2 focus:ring-red-200"
+                                        />
+
+                                        <div className="flex gap-2">
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => {
+                                                    setShowCancelBox(false);
+                                                    setCancelReason("");
+                                                }}
+                                                className="flex-1"
+                                            >
+                                                Đóng
+                                            </Button>
+
+                                            <Button
+                                                variant="destructive"
+                                                onClick={handleCancelOrder}
+                                                disabled={isCancelling}
+                                                className="flex-1"
+                                            >
+                                                {isCancelling ? (
+                                                    <>
+                                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                        Đang hủy...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <XCircle className="w-4 h-4 mr-2" />
+                                                        Xác nhận hủy
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         )}
                     </div>

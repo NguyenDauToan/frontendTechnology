@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { markOrderAsPaid, updateOrderStatus } from "@/api/orderService"; 
+import { markOrderAsPaid, updateOrderStatus } from "@/api/orderService";
 import { useState } from "react";
 import { toast } from "sonner";
 import { CheckCircle, Loader2, Package, Truck, CheckCircle2, Clock } from "lucide-react";
@@ -22,7 +22,7 @@ const OrderDetailModal = ({ isOpen, onClose, order, onUpdate }: Props) => {
   const orderId = order._id || order.id;
 
   const handleConfirmPayment = async () => {
-    if(!confirm("Xác nhận đã thu tiền cho đơn hàng này?")) return;
+    if (!confirm("Xác nhận đã thu tiền cho đơn hàng này?")) return;
 
     setLoadingPay(true);
     try {
@@ -37,16 +37,22 @@ const OrderDetailModal = ({ isOpen, onClose, order, onUpdate }: Props) => {
   };
 
   const handleUpdateStatus = async (nextStatus: string, message: string) => {
-    if(!confirm(`Bạn có chắc chắn muốn chuyển đơn hàng sang trạng thái: ${message}?`)) return;
+    if (!confirm(`Bạn có chắc chắn muốn chuyển đơn hàng sang trạng thái: ${message}?`)) return;
 
     setLoadingStatus(true);
     try {
-      await updateOrderStatus(orderId, nextStatus); 
+      const updated = await updateOrderStatus(orderId, nextStatus);
+
       toast.success(`Đã cập nhật trạng thái: ${message}`);
+
+      // cập nhật realtime
+      order.status = updated.status;
+      order.isPaid = updated.isPaid;
+
       onUpdate();
-      
+
       if (nextStatus === "Completed") {
-          onClose();
+        onClose();
       }
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Lỗi cập nhật trạng thái");
@@ -57,14 +63,14 @@ const OrderDetailModal = ({ isOpen, onClose, order, onUpdate }: Props) => {
 
   const renderNextStepAction = () => {
     if (order.status === "Cancelled") {
-        return <div className="text-red-500 font-medium text-center p-2 bg-red-50 rounded">Đơn hàng đã bị hủy</div>;
+      return <div className="text-red-500 font-medium text-center p-2 bg-red-50 rounded">Đơn hàng đã bị hủy</div>;
     }
 
     switch (order.status) {
       case "Pending":
         return (
-          <Button 
-            onClick={() => handleUpdateStatus("Confirmed", "Xác nhận & Đóng gói")} 
+          <Button
+            onClick={() => handleUpdateStatus("Confirmed", "Xác nhận & Đóng gói")}
             disabled={loadingStatus}
             className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
           >
@@ -74,8 +80,8 @@ const OrderDetailModal = ({ isOpen, onClose, order, onUpdate }: Props) => {
         );
       case "Confirmed":
         return (
-          <Button 
-            onClick={() => handleUpdateStatus("Shipping", "Đang giao hàng")} 
+          <Button
+            onClick={() => handleUpdateStatus("Shipping", "Đang giao hàng")}
             disabled={loadingStatus}
             className="w-full bg-orange-500 hover:bg-orange-600 shadow-sm"
           >
@@ -83,11 +89,11 @@ const OrderDetailModal = ({ isOpen, onClose, order, onUpdate }: Props) => {
             BƯỚC 2: Giao cho Đơn vị vận chuyển
           </Button>
         );
-      case "Shipping": 
+      case "Shipping":
         // ĐÃ SỬA: Shipper báo giao xong -> Chuyển sang trạng thái Delivered
         return (
-          <Button 
-            onClick={() => handleUpdateStatus("Delivered", "Đã giao hàng (Chờ khách xác nhận)")} 
+          <Button
+            onClick={() => handleUpdateStatus("Delivered", "Đã giao hàng (Chờ khách xác nhận)")}
             disabled={loadingStatus}
             className="w-full bg-purple-600 hover:bg-purple-700 text-white shadow-sm"
           >
@@ -102,10 +108,10 @@ const OrderDetailModal = ({ isOpen, onClose, order, onUpdate }: Props) => {
             <div className="flex items-center justify-center gap-2 text-purple-700 font-bold text-sm bg-purple-50 p-3 rounded-lg border border-purple-200 text-center">
               <Clock className="w-5 h-5 flex-shrink-0" /> KIỆN HÀNG ĐÃ GIAO - CHỜ KHÁCH XÁC NHẬN
             </div>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
-              onClick={() => handleUpdateStatus("Completed", "Hoàn tất đơn hàng")} 
+              onClick={() => handleUpdateStatus("Completed", "Hoàn tất đơn hàng")}
               className="text-xs text-gray-500 hover:text-green-600 mt-2"
             >
               Khách quên bấm xác nhận? Ép "Hoàn tất"
@@ -120,8 +126,8 @@ const OrderDetailModal = ({ isOpen, onClose, order, onUpdate }: Props) => {
         );
       default:
         return (
-            <Button 
-            onClick={() => handleUpdateStatus("Confirmed", "Đang xử lý")} 
+          <Button
+            onClick={() => handleUpdateStatus("Confirmed", "Đang xử lý")}
             disabled={loadingStatus}
             className="w-full"
           >
@@ -133,7 +139,7 @@ const OrderDetailModal = ({ isOpen, onClose, order, onUpdate }: Props) => {
 
   // Helper để dịch trạng thái ra tiếng Việt cho đẹp
   const translateStatus = (status: string) => {
-    switch(status) {
+    switch (status) {
       case "Pending": return "Chờ xác nhận";
       case "Confirmed": return "Đã xác nhận";
       case "Shipping": return "Đang giao hàng";
@@ -155,14 +161,14 @@ const OrderDetailModal = ({ isOpen, onClose, order, onUpdate }: Props) => {
 
         {/* Thông tin khách hàng & Giao hàng */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mt-4">
-          
+
           <div className="md:col-span-7 space-y-4">
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
               <h4 className="font-semibold text-sm text-gray-900 mb-2 uppercase tracking-wide">Khách hàng</h4>
               <p className="text-sm font-medium">{order.user?.name || "Khách vãng lai"}</p>
               <p className="text-sm text-gray-500">{order.user?.email || "Không có email"}</p>
             </div>
-            
+
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
               <h4 className="font-semibold text-sm text-gray-900 mb-2 uppercase tracking-wide">Thông tin giao hàng</h4>
               <p className="text-sm"><strong>Người nhận:</strong> {order.shippingAddress?.recipient_name || order.user?.name}</p>
@@ -177,10 +183,22 @@ const OrderDetailModal = ({ isOpen, onClose, order, onUpdate }: Props) => {
 
               <div>
                 <h4 className="font-bold text-base text-gray-900 mb-4 uppercase tracking-wide border-b pb-2">Tiến trình xử lý</h4>
-                
+
                 <div className="flex justify-between items-center mb-3 bg-gray-50 p-2 rounded">
-                  <span className="text-sm text-gray-600 flex items-center gap-2"><Clock className="w-4 h-4"/> Trạng thái:</span>
-                  <Badge variant="outline" className="text-[13px] font-semibold uppercase">
+                  <span className="text-sm text-gray-600 flex items-center gap-2"><Clock className="w-4 h-4" /> Trạng thái:</span>
+                  <Badge
+                    className={
+                      order.status === "Completed"
+                        ? "bg-green-100 text-green-700"
+                        : order.status === "Cancelled"
+                          ? "bg-red-100 text-red-700"
+                          : order.status === "Shipping"
+                            ? "bg-blue-100 text-blue-700"
+                            : order.status === "Delivered"
+                              ? "bg-purple-100 text-purple-700"
+                              : "bg-yellow-100 text-yellow-700"
+                    }
+                  >
                     {translateStatus(order.status)}
                   </Badge>
                 </div>
@@ -211,6 +229,24 @@ const OrderDetailModal = ({ isOpen, onClose, order, onUpdate }: Props) => {
                 )}
 
                 {renderNextStepAction()}
+                {order.status === "Cancelled" && order.cancelReason && (
+                  <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-4">
+                    <p className="text-sm font-semibold text-red-600 mb-1">
+                      Lý do khách hủy đơn
+                    </p>
+
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      {order.cancelReason}
+                    </p>
+
+                    {order.cancelledAt && (
+                      <p className="text-xs text-gray-500 mt-2">
+                        Thời gian hủy:{" "}
+                        {new Date(order.cancelledAt).toLocaleString("vi-VN")}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
             </div>

@@ -204,8 +204,11 @@ const Header = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shadow-sm">
-
+      <header className="sticky top-0 z-50 w-full
+bg-gradient-to-r from-blue-50 via-white to-cyan-50
+dark:from-gray-950 dark:via-gray-900 dark:to-gray-950
+border-b border-blue-100
+backdrop-blur-md shadow-sm">
         <div className="container mx-auto px-4">
 
           <div className="flex h-16 items-center justify-between gap-6">
@@ -458,13 +461,13 @@ const Header = () => {
 
                         {userInfo.role ===
                           "admin" && (
-                          <Link to="/admin">
-                            <div className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-yellow-600 hover:bg-yellow-50 rounded-md cursor-pointer transition-colors">
-                              <Settings className="h-4 w-4" />
-                              Trang quản trị
-                            </div>
-                          </Link>
-                        )}
+                            <Link to="/admin">
+                              <div className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-yellow-600 hover:bg-yellow-50 rounded-md cursor-pointer transition-colors">
+                                <Settings className="h-4 w-4" />
+                                Trang quản trị
+                              </div>
+                            </Link>
+                          )}
 
                         <Link to="/profile">
                           <div className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md cursor-pointer transition-colors">

@@ -62,11 +62,17 @@ export const getMyOrders = async () => {
   const response = await axios.get(`${API_URL}/orders/myorders`, getAuthHeader());
   return response.data;
 };
-export const cancelOrder = async (id: string) => {
+export const cancelOrder = async (
+  id: string,
+  cancelReason: string
+) => {
   const response = await axios.put(
-    `${API_URL}/orders/${id}/status`,
-    { status: "Cancelled" },
+    `${API_URL}/orders/${id}/cancel`,
+    {
+      reason: cancelReason // 🔥 đổi ở đây
+    },
     getAuthHeader()
   );
+
   return response.data;
 };
