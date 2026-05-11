@@ -123,7 +123,7 @@ const FeaturedProducts = () => {
       <div className="container mx-auto px-4 max-w-7xl">
 
         {/* --- KHUNG BAO BỌC (BOX) GIỐNG TRONG ẢNH --- */}
-        <div className="bg-white border border-gray-200 shadow-sm p-4 sm:p-5">
+        <div className="bg-white border border-gray-200 shadow-sm p-4 sm:p-5" style={{ marginTop: "25px" }}>
 
           {/* Header Section */}
           <div className="flex items-center justify-between mb-5 border-b border-gray-100 pb-3">
